@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="movie.mapper.MovieMapper">
+
+	<resultMap id="actorResultMap" type="movie.vo.ActorVO">
+		<id property="actorcd" column="actorcd"/>
+		<result property="actornm" column="actornm"/>
+		<result property="actorenm" column="actorenm"/>
+		<result property="birth" column="birth"/>
+		<result property="sex" column="sex"/>
+		<result property="debut" column="debut"/>
+		<result property="photo" column="photo"/>
+		<!-- 
+		<collection property="empList" javaType="ArrayList" resultMap="empResultMap" /> 
+ 		-->	
+	</resultMap>
+	
+	<select id="actorAllSelectSQL" resultMap="actorResultMap">
+	<![CDATA[
+		SELECT * FROM (SELECT * FROM (SELECT ROWNUM row_num,actor.* FROM actor ) WHERE row_num >=#{startNum}) WHERE row_num <=#{endNum}
+		]]>
+	</select>
+	
+	<select id="actorSelectSQL"  resultMap="actorResultMap">
+		select * from actor where actornm=#{actornm}
+	</select>
+
+	<resultMap id="movieResultMap" type="movie.vo.MovieVO">
+		<result property="audi" column="audi"/>
+		<result property="year" column="year"/>
+		<result property="rating" column="rating"/>
+		<result property="title" column="title"/>
+		<result property="poster" column="poster"/>
+		<result property="aname" column="aname"/>
+		<result property="genre" column="genre"/>
+		<!-- 
+		<collection property="empList" javaType="ArrayList" resultMap="empResultMap" /> 
+ 		-->	
+	</resultMap>
+
+	<select id="yearSelectSQL"  resultMap="movieResultMap">
+		select * from movie where aname =#{actornm} and year=#{year}
+	</select>
+	
+	<select id="filmoSelectSQL"  resultMap="movieResultMap">
+		select * from movie where aname =#{actornm} 
+	</select>
+	
+	<resultMap id="audicntResultMap" type="movie.vo.AudiCntVO">
+		
+		<result property="aname" column="aname"/>
+		<result property="audicnt" column="audicnt"/>
+		<!-- 
+		<collection property="empList" javaType="ArrayList" resultMap="empResultMap" /> 
+ 		-->	
+	</resultMap>
+	
+	<select id="audicntSelectSQL"  resultMap="audicntResultMap">
+		select aname,sum(to_number(REPLACE(audi, ',', ''))) as audicnt from movie group by aname order by audicnt desc
+	</select>
+	
+	<select id="chemiIndexSelectSQL"  resultType="Double">
+		select avg(tt) from (select avg(b.rating) as tt from movie b where (b.aname,b.genre) in 
+		(select actornm,genre from (select actornm,genre,genresum from genresum where (actornm,genresum) in (select actornm,max(genresum) from genresum group by actornm) and genre in (select genre from genresum where genresum = (select max(genresum) from genresum where actornm=#{actornm}) and actornm=#{actornm}) order by genresum desc) b 
+		where rownum=1) 
+		union
+		select avg(b.rating) from movie b
+		where b.genre in (select genre from genresum where genresum = (select max(genresum) from genresum where actornm=#{actornm}) and actornm=#{actornm}) and b.aname=#{actornm})
+	</select>
+	
+	<select id="chemiIndexActorSelectSQL"  resultType="Double">
+		select avg(tt) from  
+		(select avg(b.rating) as tt from movie b
+			where (b.aname,b.genre) in
+					(select actornm,genre from (select actornm,genre from genresum where actornm=#{cheminame} and genre in (select genre from genresum where genresum = (select max(genresum) from genresum where actornm=#{actornm}) and actornm=#{actornm}) ) b
+					)
+		union
+		select avg(b.rating) from movie b
+		where b.genre in (select genre from genresum where genresum = (select max(genresum) from genresum where actornm=#{actornm}) and actornm=#{actornm}) and b.aname=#{actornm})
+	</select>
+	
+	
+	<resultMap id="BarchartResultMap" type="movie.vo.BarchartVO">
+		
+		<result property="year" column="year"/>
+		<result property="countt" column="audicnt"/>
+		
+	</resultMap>
+	
+	<select id="barchartSelectSQL"  resultMap="BarchartResultMap">
+		select year,count(title) as audicnt  from movie where aname=#{actornm} group by year order by year
+	</select>
+	
+	
+	<resultMap id="GenresumResultMap" type="movie.vo.GenresumVO">
+		
+		<result property="genre" column="genre"/>
+		<result property="genresum" column="genresum"/>
+		<result property="actornm" column="actornm"/>
+		<result property="chemisum" column="chemisum"/>
+		<!-- 
+		<collection property="empList" javaType="ArrayList" resultMap="empResultMap" /> 
+ 		-->	
+	</resultMap>
+	
+	<select id="genresumSelectSQL"  resultMap="GenresumResultMap">
+		select genre,genresum from genresum where actornm= #{actornm}
+	</select>
+
+	<select id="chemisumSelectSQL"  resultMap="GenresumResultMap">
+		select actornm,genresum from genresum where (actornm,genresum) in (select actornm,max(genresum) from genresum group by actornm having actornm!=#{actornm}) and genre in (select genre from genresum where genresum = (select max(genresum) from genresum where actornm=#{actornm}) and actornm=#{actornm}) order by genresum desc
+	</select>
+	
+	
+	
+</mapper>	
