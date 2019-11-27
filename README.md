@@ -8,8 +8,8 @@
 
 ## 실제 구현한 웹사이트
 
-### 메인 페이지과 상세 페이지
+- 메인 페이지과 상세 페이지
 ![A-Movie](https://user-images.githubusercontent.com/48819697/69686534-6973eb00-1103-11ea-8148-a58e5ed8983b.png)
 
-### 상세 페이지와 필모그래피 페이지
+- 상세 페이지와 필모그래피 페이지
 ![A-Movie2](https://user-images.githubusercontent.com/48819697/69686539-6c6edb80-1103-11ea-89df-80aa136aa52e.png)
